@@ -15,6 +15,8 @@ export default function EditorPage() {
   const updatePromptTitle = usePromptStore((state) => state.updatePromptTitle)
   const { prompt, versions } = usePrompt(id ?? null)
   const [title, setTitle] = useState('')
+  const titleTimeoutRef = useRef<number | null>(null)
+  const lastSavedTitleRef = useRef('')
 
   useEffect(() => {
     if (id || createdRef.current) {
@@ -30,8 +32,36 @@ export default function EditorPage() {
   )
 
   useEffect(() => {
-    setTitle(prompt?.title ?? '')
+    const nextTitle = prompt?.title ?? ''
+    setTitle(nextTitle)
+    lastSavedTitleRef.current = nextTitle
   }, [prompt?.title])
+
+  useEffect(() => {
+    if (!id || !prompt) {
+      return undefined
+    }
+
+    const nextTitle = title.trim()
+    if (!nextTitle || nextTitle === lastSavedTitleRef.current) {
+      return undefined
+    }
+
+    if (titleTimeoutRef.current) {
+      window.clearTimeout(titleTimeoutRef.current)
+    }
+
+    titleTimeoutRef.current = window.setTimeout(() => {
+      lastSavedTitleRef.current = nextTitle
+      void updatePromptTitle(id, nextTitle)
+    }, 500)
+
+    return () => {
+      if (titleTimeoutRef.current) {
+        window.clearTimeout(titleTimeoutRef.current)
+      }
+    }
+  }, [title, id, prompt, updatePromptTitle])
 
   const saveTitle = async () => {
     if (!id || !prompt) {
@@ -43,6 +73,7 @@ export default function EditorPage() {
       return
     }
     if (nextTitle !== prompt.title) {
+      lastSavedTitleRef.current = nextTitle
       await updatePromptTitle(id, nextTitle)
     }
   }
