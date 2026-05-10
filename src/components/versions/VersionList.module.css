@@ -17,3 +17,9 @@
   font-size: var(--font-size-xs);
   color: var(--text-muted);
 }
+
+.empty {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}

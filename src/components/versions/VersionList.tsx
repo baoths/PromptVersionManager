@@ -7,18 +7,17 @@ export function VersionList() {
   const activePromptId = useAppStore((state) => state.activePromptId)
   const { versions } = useVersionHistory(activePromptId)
 
-  const items =
-    versions.length > 0
-      ? versions
-      : [
-          { id: 'v3', versionLabel: 'v3', isCurrent: true },
-          { id: 'v2', versionLabel: 'v2', isCurrent: false },
-          { id: 'v1', versionLabel: 'v1', isCurrent: false },
-        ]
+  if (!activePromptId) {
+    return <p className={styles.empty}>Select a prompt to view versions.</p>
+  }
+
+  if (versions.length === 0) {
+    return <p className={styles.empty}>No versions yet.</p>
+  }
 
   return (
     <ul className={styles.list}>
-      {items.map((version) => (
+      {versions.map((version) => (
         <li key={version.id} className={styles.item}>
           <VersionBadge label={version.versionLabel} active={version.isCurrent} />
           <span className={styles.meta}>
