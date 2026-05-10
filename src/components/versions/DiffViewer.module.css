@@ -1,0 +1,22 @@
+.viewer {
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  line-height: 1.6;
+}
+
+.added {
+  background: var(--diff-add-bg);
+  color: var(--diff-add-text);
+}
+
+.removed {
+  background: var(--diff-del-bg);
+  color: var(--diff-del-text);
+  text-decoration: line-through;
+}
+
+.unchanged {
+  color: var(--text-secondary);
+}

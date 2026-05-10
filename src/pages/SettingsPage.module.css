@@ -1,0 +1,45 @@
+.page {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.header h1 {
+  margin: 0 0 var(--space-1) 0;
+}
+
+.header p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.panel {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.row h3 {
+  margin: 0 0 var(--space-1) 0;
+}
+
+.row p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 800px) {
+  .row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

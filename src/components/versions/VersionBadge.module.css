@@ -1,0 +1,13 @@
+.badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-default);
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.active {
+  background: var(--accent-subtle);
+  color: var(--text-accent);
+  border-color: transparent;
+}

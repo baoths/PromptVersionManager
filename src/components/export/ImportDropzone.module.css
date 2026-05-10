@@ -1,0 +1,19 @@
+.dropzone {
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  text-align: center;
+  color: var(--text-secondary);
+  display: grid;
+  gap: var(--space-3);
+  background: var(--bg-secondary);
+}
+
+.dropzone button {
+  border: 1px solid var(--border-default);
+  background: transparent;
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  cursor: pointer;
+}

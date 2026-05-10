@@ -1,0 +1,40 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 10, 12, 0.6);
+  display: grid;
+  place-items: center;
+  z-index: var(--z-modal);
+}
+
+.modal {
+  width: min(560px, 90vw);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--panel-shadow);
+  padding: var(--space-4);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.header h2 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.close {
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  cursor: pointer;
+}
+
+.body {
+  color: var(--text-secondary);
+}

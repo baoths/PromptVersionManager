@@ -1,0 +1,15 @@
+.fallback {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.fallback h2 {
+  margin: 0 0 var(--space-2) 0;
+}
+
+.fallback p {
+  margin: 0;
+}

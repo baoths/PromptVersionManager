@@ -1,0 +1,11 @@
+.main {
+  padding: var(--space-6);
+  min-height: 0;
+  overflow: auto;
+}
+
+@media (max-width: 820px) {
+  .main {
+    padding: var(--space-4);
+  }
+}
