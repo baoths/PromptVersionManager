@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import styles from './EditorPage.module.css'
 import { PromptEditor } from '../components/editor/PromptEditor'
@@ -12,7 +12,9 @@ export default function EditorPage() {
   const navigate = useNavigate()
   const createdRef = useRef(false)
   const createPrompt = usePromptStore((state) => state.createPrompt)
+  const updatePromptTitle = usePromptStore((state) => state.updatePromptTitle)
   const { prompt, versions } = usePrompt(id ?? null)
+  const [title, setTitle] = useState('')
 
   useEffect(() => {
     if (id || createdRef.current) {
@@ -27,6 +29,24 @@ export default function EditorPage() {
     [versions],
   )
 
+  useEffect(() => {
+    setTitle(prompt?.title ?? '')
+  }, [prompt?.title])
+
+  const saveTitle = async () => {
+    if (!id || !prompt) {
+      return
+    }
+    const nextTitle = title.trim()
+    if (!nextTitle) {
+      setTitle(prompt.title)
+      return
+    }
+    if (nextTitle !== prompt.title) {
+      await updatePromptTitle(id, nextTitle)
+    }
+  }
+
   if (!id && !prompt) {
     return <p className={styles.loading}>Creating prompt...</p>
   }
@@ -35,7 +55,21 @@ export default function EditorPage() {
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <h1>{prompt?.title ?? 'Untitled Prompt'}</h1>
+          <input
+            className={styles.titleInput}
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            onBlur={() => void saveTitle()}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault()
+                void saveTitle()
+                event.currentTarget.blur()
+              }
+            }}
+            placeholder="Untitled Prompt"
+            aria-label="Prompt title"
+          />
           <p>Draft autosaves every 800ms.</p>
         </div>
         <div className={styles.actions}>

@@ -13,6 +13,7 @@ interface PromptState {
   updateDraft: (content: string) => void
   saveDraft: (promptId: string, content: string) => Promise<void>
   commitVersion: (promptId: string, message?: string) => Promise<void>
+  updatePromptTitle: (promptId: string, title: string) => Promise<void>
   deletePrompt: (id: string) => Promise<void>
   archivePrompt: (id: string) => Promise<void>
   setActivePrompt: (id: string | null) => void
@@ -96,6 +97,10 @@ export const usePromptStore = create<PromptState>((set, get) => ({
 
     await db.promptVersions.add(newVersion)
     await db.prompts.update(promptId, { updatedAt: Date.now() })
+    await get().loadPrompts()
+  },
+  updatePromptTitle: async (promptId, title) => {
+    await db.prompts.update(promptId, { title, updatedAt: Date.now() })
     await get().loadPrompts()
   },
   deletePrompt: async (id) => {
