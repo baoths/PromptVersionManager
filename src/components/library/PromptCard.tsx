@@ -80,7 +80,6 @@ export function PromptCard({ data }: PromptCardProps) {
         <p className={styles.preview}>{previewText}</p>
       )}
       {data.folderName ? (
-              event.stopPropagation()
         <div className={styles.folder}>
           <span>Folder</span>
           <strong>{data.folderName}</strong>
