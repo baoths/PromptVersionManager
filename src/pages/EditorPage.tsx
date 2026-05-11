@@ -13,8 +13,13 @@ export default function EditorPage() {
   const createdRef = useRef(false)
   const createPrompt = usePromptStore((state) => state.createPrompt)
   const updatePromptTitle = usePromptStore((state) => state.updatePromptTitle)
+  const updatePromptTags = usePromptStore((state) => state.updatePromptTags)
+  const updatePromptFolder = usePromptStore((state) => state.updatePromptFolder)
+  const folders = usePromptStore((state) => state.folders)
   const { prompt, versions } = usePrompt(id ?? null)
   const [title, setTitle] = useState('')
+  const [tagInput, setTagInput] = useState('')
+  const [folderId, setFolderId] = useState('')
   const titleTimeoutRef = useRef<number | null>(null)
   const lastSavedTitleRef = useRef('')
 
@@ -36,6 +41,10 @@ export default function EditorPage() {
     setTitle(nextTitle)
     lastSavedTitleRef.current = nextTitle
   }, [prompt?.title])
+
+  useEffect(() => {
+    setFolderId(prompt?.folderId ?? '')
+  }, [prompt?.folderId])
 
   useEffect(() => {
     if (!id || !prompt) {
@@ -78,6 +87,37 @@ export default function EditorPage() {
     }
   }
 
+  const tags = prompt?.tags ?? []
+
+  const handleAddTag = async () => {
+    if (!id || !prompt) {
+      return
+    }
+    const nextTag = tagInput.trim()
+    if (!nextTag) {
+      return
+    }
+    const nextTags = Array.from(new Set([...tags, nextTag]))
+    await updatePromptTags(id, nextTags)
+    setTagInput('')
+  }
+
+  const handleRemoveTag = async (tag: string) => {
+    if (!id || !prompt) {
+      return
+    }
+    const nextTags = tags.filter((item) => item !== tag)
+    await updatePromptTags(id, nextTags)
+  }
+
+  const handleFolderChange = async (value: string) => {
+    if (!id || !prompt) {
+      return
+    }
+    setFolderId(value)
+    await updatePromptFolder(id, value || null)
+  }
+
   if (!id && !prompt) {
     return <p className={styles.loading}>Creating prompt...</p>
   }
@@ -101,6 +141,60 @@ export default function EditorPage() {
             placeholder="Untitled Prompt"
             aria-label="Prompt title"
           />
+          <div className={styles.metaRow}>
+            <div className={styles.tagEditor}>
+              <div className={styles.tagList}>
+                {tags.length === 0 ? (
+                  <span className={styles.tagEmpty}>No tags yet.</span>
+                ) : (
+                  tags.map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      className={styles.tagButton}
+                      onClick={() => void handleRemoveTag(tag)}
+                      aria-label={`Remove ${tag}`}
+                    >
+                      {tag}
+                      <span aria-hidden="true"> x</span>
+                    </button>
+                  ))
+                )}
+              </div>
+              <div className={styles.tagInput}>
+                <input
+                  type="text"
+                  placeholder="Add tag"
+                  value={tagInput}
+                  onChange={(event) => setTagInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      void handleAddTag()
+                    }
+                  }}
+                  aria-label="Add tag"
+                />
+                <button type="button" onClick={() => void handleAddTag()}>
+                  Add
+                </button>
+              </div>
+            </div>
+            <div className={styles.folderPicker}>
+              <label htmlFor="folder-select">Folder</label>
+              <select
+                id="folder-select"
+                value={folderId}
+                onChange={(event) => void handleFolderChange(event.target.value)}
+              >
+                <option value="">No folder</option>
+                {folders.map((folder) => (
+                  <option key={folder.id} value={folder.id}>
+                    {folder.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
           <p>Draft autosaves every 800ms.</p>
         </div>
         <div className={styles.actions}>
@@ -108,7 +202,11 @@ export default function EditorPage() {
           <ShareModal />
         </div>
       </header>
-      <PromptEditor promptId={id ?? null} initialContent={current?.content ?? ''} />
+      <PromptEditor
+        promptId={id ?? null}
+        initialContent={current?.content ?? ''}
+        initialVariables={current?.variables ?? {}}
+      />
     </div>
   )
 }

@@ -4,41 +4,25 @@ import { PromptGrid } from '../components/library/PromptGrid'
 import { usePromptStore } from '../stores/usePromptStore'
 import type { PromptCardData } from '../components/library/PromptCard'
 import { ImportDropzone } from '../components/export/ImportDropzone'
-
-const demoPrompts: PromptCardData[] = [
-  {
-    id: 'demo-1',
-    title: 'Launch summary prompt',
-    content:
-      'Summarize the launch plan in 5 bullets with risks and next steps. Include timeline dependencies, budget constraints, and a short recommendation section that highlights the primary owner for each action item.',
-    tags: ['product', 'analysis'],
-    updatedAt: Date.now() - 1000 * 60 * 60 * 4,
-    versionLabel: 'v3',
-  },
-  {
-    id: 'demo-2',
-    title: 'Voice rewrite',
-    content:
-      'Rewrite in an assertive, empathetic voice with a clear CTA. Make sure to include a short subject line and a closing sentence that reinforces the urgency without sounding pushy.',
-    tags: ['voice', 'sales'],
-    updatedAt: Date.now() - 1000 * 60 * 60 * 20,
-    versionLabel: 'v2',
-  },
-]
+import { useAppStore } from '../stores/useAppStore'
 
 export default function LibraryPage() {
   const prompts = usePromptStore((state) => state.prompts)
   const versions = usePromptStore((state) => state.versions)
+  const folders = usePromptStore((state) => state.folders)
   const loadPrompts = usePromptStore((state) => state.loadPrompts)
+  const setActivePromptId = useAppStore((state) => state.setActivePrompt)
 
   useEffect(() => {
     void loadPrompts()
   }, [loadPrompts])
 
+  useEffect(() => {
+    setActivePromptId(null)
+  }, [setActivePromptId])
+
   const promptCards = useMemo<PromptCardData[]>(() => {
-    if (prompts.length === 0) {
-      return demoPrompts
-    }
+    const folderMap = new Map(folders.map((folder) => [folder.id, folder.name]))
 
     return prompts.map((prompt) => {
       const current = versions.find(
@@ -49,11 +33,12 @@ export default function LibraryPage() {
         title: prompt.title,
         content: current?.content ?? '',
         tags: prompt.tags,
+        folderName: prompt.folderId ? folderMap.get(prompt.folderId) ?? null : null,
         updatedAt: prompt.updatedAt,
         versionLabel: current?.versionLabel ?? 'v1',
       }
     })
-  }, [prompts, versions])
+  }, [prompts, versions, folders])
 
   return (
     <div className={styles.page}>
@@ -73,7 +58,11 @@ export default function LibraryPage() {
           </div>
         </div>
       </header>
-      <PromptGrid prompts={promptCards} />
+      {promptCards.length === 0 ? (
+        <p className={styles.empty}>No prompts yet. Create a new prompt to get started.</p>
+      ) : (
+        <PromptGrid prompts={promptCards} />
+      )}
       <section className={styles.imports}>
         <h2>Import prompts</h2>
         <ImportDropzone />
