@@ -12,7 +12,10 @@ export function DiffViewer({ previous, next }: DiffViewerProps) {
     type: 'added' | 'removed' | 'unchanged'
     left: number | null
     right: number | null
-    content: string
+    leftContent: string
+    rightContent: string
+    leftMarker: string
+    rightMarker: string
   }> = []
   let leftLine = 1
   let rightLine = 1
@@ -43,11 +46,15 @@ export function DiffViewer({ previous, next }: DiffViewerProps) {
         rightLine += 1
       }
 
+      const content = line.length > 0 ? line : ' '
       rows.push({
         type,
         left,
         right,
-        content: line.length > 0 ? line : ' ',
+        leftContent: type === 'added' ? ' ' : content,
+        rightContent: type === 'removed' ? ' ' : content,
+        leftMarker: type === 'removed' ? '-' : ' ',
+        rightMarker: type === 'added' ? '+' : ' ',
       })
     })
   })
@@ -65,8 +72,11 @@ export function DiffViewer({ previous, next }: DiffViewerProps) {
           return (
             <div key={`${row.left}-${row.right}-${index}`} className={`${styles.row} ${rowClass}`.trim()}>
               <span className={styles.lineNumber}>{row.left ?? ''}</span>
+              <span className={styles.marker}>{row.leftMarker}</span>
+              <span className={styles.lineContent}>{row.leftContent}</span>
               <span className={styles.lineNumber}>{row.right ?? ''}</span>
-              <span className={styles.lineContent}>{row.content}</span>
+              <span className={styles.marker}>{row.rightMarker}</span>
+              <span className={styles.lineContent}>{row.rightContent}</span>
             </div>
           )
         })}

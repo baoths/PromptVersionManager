@@ -81,6 +81,12 @@
   color: var(--text-primary);
 }
 
+.folderItemActive {
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+  color: var(--text-accent);
+}
+
 .folderInput {
   display: grid;
   grid-template-columns: 1fr auto;

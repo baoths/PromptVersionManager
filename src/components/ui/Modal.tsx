@@ -33,7 +33,10 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
       className={styles.overlay}
       role="dialog"
       aria-modal="true"
-      onClick={onClose}
+      onClick={(event) => {
+        event.stopPropagation()
+        onClose()
+      }}
     >
       <div className={styles.modal} onClick={(event) => event.stopPropagation()}>
         <header className={styles.header}>

@@ -7,6 +7,8 @@ interface AppState {
   sidebarCollapsed: boolean
   inspectorCollapsed: boolean
   activePromptId: string | null
+  selectedFolderId: string | null
+  selectedTags: string[]
   compactSidebar: boolean
   showTokenEstimate: boolean
   confirmBeforeDelete: boolean
@@ -15,6 +17,8 @@ interface AppState {
   toggleSidebar: () => void
   toggleInspector: () => void
   setActivePrompt: (id: string | null) => void
+  setSelectedFolderId: (id: string | null) => void
+  setSelectedTags: (tags: string[]) => void
   setCompactSidebar: (value: boolean) => void
   setShowTokenEstimate: (value: boolean) => void
   setConfirmBeforeDelete: (value: boolean) => void
@@ -50,6 +54,8 @@ export const useAppStore = create<AppState>((set) => ({
   sidebarCollapsed: false,
   inspectorCollapsed: false,
   activePromptId: null,
+  selectedFolderId: null,
+  selectedTags: [],
   compactSidebar: readBool('pvm-compact-sidebar', false),
   showTokenEstimate: readBool('pvm-show-token-estimate', true),
   confirmBeforeDelete: readBool('pvm-confirm-before-delete', true),
@@ -72,6 +78,8 @@ export const useAppStore = create<AppState>((set) => ({
   toggleInspector: () =>
     set((state) => ({ inspectorCollapsed: !state.inspectorCollapsed })),
   setActivePrompt: (id) => set({ activePromptId: id }),
+  setSelectedFolderId: (id) => set({ selectedFolderId: id }),
+  setSelectedTags: (tags) => set({ selectedTags: tags }),
   setCompactSidebar: (value) => {
     writeBool('pvm-compact-sidebar', value)
     set({ compactSidebar: value })

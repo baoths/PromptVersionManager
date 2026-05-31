@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import styles from './Sidebar.module.css'
 import { SearchBar } from '../search/SearchBar'
 import { TagFilter } from '../library/TagFilter'
@@ -8,10 +8,14 @@ import { useAppStore } from '../../stores/useAppStore'
 
 export function Sidebar() {
   const compactSidebar = useAppStore((state) => state.compactSidebar)
+  const selectedFolderId = useAppStore((state) => state.selectedFolderId)
+  const setSelectedFolderId = useAppStore((state) => state.setSelectedFolderId)
+  const setSelectedTags = useAppStore((state) => state.setSelectedTags)
   const folders = usePromptStore((state) => state.folders)
   const createFolder = usePromptStore((state) => state.createFolder)
   const loadPrompts = usePromptStore((state) => state.loadPrompts)
   const [folderName, setFolderName] = useState('')
+  const navigate = useNavigate()
 
   const handleCreateFolder = async () => {
     const nextName = folderName.trim()
@@ -35,7 +39,14 @@ export function Sidebar() {
       <div className={styles.section}>
         <p className={styles.sectionLabel}>Library</p>
         <nav className={styles.nav}>
-          <NavLink to="/" className={({ isActive }) => (isActive ? styles.active : '')}>
+          <NavLink
+            to="/"
+            className={({ isActive }) => (isActive ? styles.active : '')}
+            onClick={() => {
+              setSelectedFolderId(null)
+              setSelectedTags([])
+            }}
+          >
             All Prompts
           </NavLink>
           <NavLink to="/settings" className={({ isActive }) => (isActive ? styles.active : '')}>
@@ -49,11 +60,36 @@ export function Sidebar() {
           {folders.length === 0 ? (
             <p className={styles.empty}>No folders yet.</p>
           ) : (
-            folders.map((folder) => (
-              <button key={folder.id} type="button" className={styles.folderItem}>
-                {folder.name}
+            <>
+              <button
+                key="no-folder"
+                type="button"
+                className={`${styles.folderItem} ${
+                  selectedFolderId === 'no-folder' ? styles.folderItemActive : ''
+                }`.trim()}
+                onClick={() => {
+                  setSelectedFolderId('no-folder')
+                  navigate('/')
+                }}
+              >
+                No folder
               </button>
-            ))
+              {folders.map((folder) => (
+                <button
+                  key={folder.id}
+                  type="button"
+                  className={`${styles.folderItem} ${
+                    selectedFolderId === folder.id ? styles.folderItemActive : ''
+                  }`.trim()}
+                  onClick={() => {
+                    setSelectedFolderId(folder.id)
+                    navigate('/')
+                  }}
+                >
+                  {folder.name}
+                </button>
+              ))}
+            </>
           )}
         </div>
         <div className={styles.folderInput}>

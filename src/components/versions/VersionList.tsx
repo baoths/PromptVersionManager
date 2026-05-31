@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import styles from './VersionList.module.css'
 import { VersionBadge } from './VersionBadge'
 import { useVersionHistory } from '../../hooks/useVersionHistory'
@@ -8,6 +8,7 @@ import type { PromptVersion } from '../../db/schema'
 
 export function VersionList() {
   const navigate = useNavigate()
+  const location = useLocation()
   const activePromptId = useAppStore((state) => state.activePromptId)
   const { versions, currentVersion } = useVersionHistory(activePromptId)
   const [selection, setSelection] = useState<string[]>([])
@@ -53,6 +54,13 @@ export function VersionList() {
     }.`
   })()
 
+  const handleClear = () => {
+    setSelection([])
+    if (activePromptId && location.pathname.includes('/diff/')) {
+      navigate(`/prompt/${activePromptId}`)
+    }
+  }
+
   const handleSelect = (id: string) => {
     setSelection((previous) => {
       if (previous.includes(id)) {
@@ -95,7 +103,7 @@ export function VersionList() {
             <button
               type="button"
               className={styles.clearButton}
-              onClick={() => setSelection([])}
+              onClick={handleClear}
             >
               Clear
             </button>

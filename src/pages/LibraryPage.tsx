@@ -12,6 +12,10 @@ export default function LibraryPage() {
   const folders = usePromptStore((state) => state.folders)
   const loadPrompts = usePromptStore((state) => state.loadPrompts)
   const setActivePromptId = useAppStore((state) => state.setActivePrompt)
+  const selectedFolderId = useAppStore((state) => state.selectedFolderId)
+  const selectedTags = useAppStore((state) => state.selectedTags)
+  const setSelectedFolderId = useAppStore((state) => state.setSelectedFolderId)
+  const setSelectedTags = useAppStore((state) => state.setSelectedTags)
 
   useEffect(() => {
     void loadPrompts()
@@ -21,10 +25,37 @@ export default function LibraryPage() {
     setActivePromptId(null)
   }, [setActivePromptId])
 
+  const filteredPrompts = useMemo(() => {
+    if (!selectedFolderId) {
+      return prompts
+    }
+    if (selectedFolderId === 'no-folder') {
+      return prompts.filter((prompt) => !prompt.folderId)
+    }
+    return prompts.filter((prompt) => prompt.folderId === selectedFolderId)
+  }, [prompts, selectedFolderId])
+
+  const fullyFilteredPrompts = useMemo(() => {
+    if (selectedTags.length === 0) {
+      return filteredPrompts
+    }
+    return filteredPrompts.filter((prompt) =>
+      selectedTags.some((tag) => prompt.tags.includes(tag)),
+    )
+  }, [filteredPrompts, selectedTags])
+
+  const filteredVersionCount = useMemo(() => {
+    if (!selectedFolderId) {
+      return versions.length
+    }
+    const promptIds = new Set(filteredPrompts.map((prompt) => prompt.id))
+    return versions.filter((version) => promptIds.has(version.promptId)).length
+  }, [fullyFilteredPrompts, selectedFolderId, versions])
+
   const promptCards = useMemo<PromptCardData[]>(() => {
     const folderMap = new Map(folders.map((folder) => [folder.id, folder.name]))
 
-    return prompts.map((prompt) => {
+    return fullyFilteredPrompts.map((prompt) => {
       const current = versions.find(
         (version) => version.promptId === prompt.id && version.isCurrent,
       )
@@ -38,7 +69,14 @@ export default function LibraryPage() {
         versionLabel: current?.versionLabel ?? 'v1',
       }
     })
-  }, [prompts, versions, folders])
+  }, [fullyFilteredPrompts, versions, folders])
+
+  const hasFilters = Boolean(selectedFolderId || selectedTags.length > 0)
+
+  const handleClearFilters = () => {
+    setSelectedFolderId(null)
+    setSelectedTags([])
+  }
 
   return (
     <div className={styles.page}>
@@ -47,14 +85,21 @@ export default function LibraryPage() {
           <h1>Prompt library</h1>
           <p>Keep every version, compare changes, and share snapshots.</p>
         </div>
-        <div className={styles.stats}>
-          <div>
-            <span>{promptCards.length}</span>
-            <p>Prompts</p>
-          </div>
-          <div>
-            <span>{versions.length}</span>
-            <p>Versions</p>
+        <div className={styles.headerActions}>
+          {hasFilters ? (
+            <button type="button" className={styles.clearFilters} onClick={handleClearFilters}>
+              Clear filters
+            </button>
+          ) : null}
+          <div className={styles.stats}>
+            <div>
+              <span>{promptCards.length}</span>
+              <p>Prompts</p>
+            </div>
+            <div>
+              <span>{filteredVersionCount}</span>
+              <p>Versions</p>
+            </div>
           </div>
         </div>
       </header>

@@ -13,7 +13,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: 56px 56px 1fr;
+  grid-template-columns: 52px 26px 1fr 52px 26px 1fr;
   border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -30,14 +30,24 @@
   font-variant-numeric: tabular-nums;
 }
 
-.lineNumber:last-of-type {
+.marker {
+  padding: 4px 6px;
+  text-align: center;
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
   border-right: 1px solid var(--border-subtle);
+  font-weight: 700;
 }
 
 .lineContent {
   padding: 4px 12px;
   white-space: pre-wrap;
   color: var(--text-primary);
+  border-right: 1px solid var(--border-subtle);
+}
+
+.lineContent:last-of-type {
+  border-right: none;
 }
 
 .rowAdded {
@@ -48,6 +58,11 @@
   color: var(--diff-add-text);
 }
 
+.rowAdded .marker {
+  color: var(--diff-add-text);
+  background: var(--diff-add-bg);
+}
+
 .rowRemoved {
   background: var(--diff-del-bg);
 }
@@ -55,6 +70,11 @@
 .rowRemoved .lineContent {
   color: var(--diff-del-text);
   text-decoration: line-through;
+}
+
+.rowRemoved .marker {
+  color: var(--diff-del-text);
+  background: var(--diff-del-bg);
 }
 
 .rowUnchanged {
