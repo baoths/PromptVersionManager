@@ -7,11 +7,17 @@ interface AppState {
   sidebarCollapsed: boolean
   inspectorCollapsed: boolean
   activePromptId: string | null
+  compactSidebar: boolean
+  showTokenEstimate: boolean
+  confirmBeforeDelete: boolean
   setTheme: (theme: ThemeMode) => void
   toggleTheme: () => void
   toggleSidebar: () => void
   toggleInspector: () => void
   setActivePrompt: (id: string | null) => void
+  setCompactSidebar: (value: boolean) => void
+  setShowTokenEstimate: (value: boolean) => void
+  setConfirmBeforeDelete: (value: boolean) => void
 }
 
 const defaultTheme = (): ThemeMode => {
@@ -22,11 +28,31 @@ const defaultTheme = (): ThemeMode => {
   return stored === 'light' ? 'light' : 'dark'
 }
 
+const readBool = (key: string, fallback: boolean): boolean => {
+  if (typeof window === 'undefined') {
+    return fallback
+  }
+  const stored = window.localStorage.getItem(key)
+  if (stored === null) {
+    return fallback
+  }
+  return stored === 'true'
+}
+
+const writeBool = (key: string, value: boolean) => {
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(key, String(value))
+  }
+}
+
 export const useAppStore = create<AppState>((set) => ({
   theme: defaultTheme(),
   sidebarCollapsed: false,
   inspectorCollapsed: false,
   activePromptId: null,
+  compactSidebar: readBool('pvm-compact-sidebar', false),
+  showTokenEstimate: readBool('pvm-show-token-estimate', true),
+  confirmBeforeDelete: readBool('pvm-confirm-before-delete', true),
   setTheme: (theme) => {
     if (typeof window !== 'undefined') {
       window.localStorage.setItem('pvm-theme', theme)
@@ -46,4 +72,16 @@ export const useAppStore = create<AppState>((set) => ({
   toggleInspector: () =>
     set((state) => ({ inspectorCollapsed: !state.inspectorCollapsed })),
   setActivePrompt: (id) => set({ activePromptId: id }),
+  setCompactSidebar: (value) => {
+    writeBool('pvm-compact-sidebar', value)
+    set({ compactSidebar: value })
+  },
+  setShowTokenEstimate: (value) => {
+    writeBool('pvm-show-token-estimate', value)
+    set({ showTokenEstimate: value })
+  },
+  setConfirmBeforeDelete: (value) => {
+    writeBool('pvm-confirm-before-delete', value)
+    set({ confirmBeforeDelete: value })
+  },
 }))

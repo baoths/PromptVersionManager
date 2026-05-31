@@ -8,6 +8,24 @@
   overflow: auto;
 }
 
+.compact {
+  padding: var(--space-3);
+  gap: var(--space-4);
+}
+
+.compact .sectionLabel {
+  display: none;
+}
+
+.compact .nav a {
+  padding: 6px 8px;
+  font-size: var(--font-size-sm);
+}
+
+.compact .folderInput input {
+  font-size: var(--font-size-sm);
+}
+
 .section {
   display: flex;
   flex-direction: column;

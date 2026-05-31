@@ -20,7 +20,7 @@ export function parseImport(fileName: string, content: string): ImportResult {
     }
 
     if (lower.endsWith('.md') || lower.endsWith('.markdown')) {
-      const match = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/m.exec(content)
+      const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/m.exec(content)
       if (!match) {
         return { format: 'markdown', payload: { frontmatter: null, body: content } }
       }

@@ -11,3 +11,9 @@
   margin: 0;
   color: var(--text-secondary);
 }
+
+.warning {
+  margin: 0;
+  color: var(--diff-del-text);
+  font-size: var(--font-size-sm);
+}

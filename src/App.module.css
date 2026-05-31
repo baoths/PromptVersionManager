@@ -13,6 +13,10 @@
   min-height: 0;
 }
 
+.compactSidebar {
+  grid-template-columns: 180px minmax(0, 1fr) 280px;
+}
+
 .inspector {
   background: var(--bg-secondary);
   border-left: 1px solid var(--border-default);
@@ -42,6 +46,10 @@
 @media (max-width: 1100px) {
   .body {
     grid-template-columns: 220px minmax(0, 1fr);
+  }
+
+  .compactSidebar {
+    grid-template-columns: 180px minmax(0, 1fr);
   }
 
   .inspector {

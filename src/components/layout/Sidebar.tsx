@@ -4,8 +4,10 @@ import styles from './Sidebar.module.css'
 import { SearchBar } from '../search/SearchBar'
 import { TagFilter } from '../library/TagFilter'
 import { usePromptStore } from '../../stores/usePromptStore'
+import { useAppStore } from '../../stores/useAppStore'
 
 export function Sidebar() {
+  const compactSidebar = useAppStore((state) => state.compactSidebar)
   const folders = usePromptStore((state) => state.folders)
   const createFolder = usePromptStore((state) => state.createFolder)
   const loadPrompts = usePromptStore((state) => state.loadPrompts)
@@ -25,7 +27,10 @@ export function Sidebar() {
   }, [loadPrompts])
 
   return (
-    <aside className={styles.sidebar} aria-label="Sidebar navigation">
+    <aside
+      className={`${styles.sidebar} ${compactSidebar ? styles.compact : ''}`.trim()}
+      aria-label="Sidebar navigation"
+    >
       <SearchBar />
       <div className={styles.section}>
         <p className={styles.sectionLabel}>Library</p>

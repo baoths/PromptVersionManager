@@ -10,6 +10,12 @@
   gap: var(--space-2);
 }
 
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 .helper {
   margin: 0;
   font-size: var(--font-size-xs);
@@ -30,6 +36,22 @@
 .clearButton:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
+}
+
+.compareButton {
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background: var(--accent-subtle);
+  color: var(--text-primary);
+  padding: 4px 8px;
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.compareButton:hover {
+  background: var(--accent-hover);
+  color: #fff;
 }
 
 .list {
@@ -100,37 +122,6 @@
   background: var(--accent-subtle);
   border-radius: 999px;
   padding: 2px 6px;
-}
-
-.diffPanel {
-  display: grid;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
-}
-
-.diffHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
-
-.diffTitle {
-  margin: 0;
-  font-size: var(--font-size-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-}
-
-.diffMeta {
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-}
-
-.diffBody {
-  max-height: 220px;
-  overflow: auto;
 }
 
 .empty {

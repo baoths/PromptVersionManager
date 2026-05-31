@@ -17,6 +17,7 @@ import VersionPage from './pages/VersionPage'
 
 export function App() {
   const theme = useAppStore((state) => state.theme)
+  const compactSidebar = useAppStore((state) => state.compactSidebar)
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
@@ -26,7 +27,7 @@ export function App() {
     <HashRouter>
       <div className={styles.appShell}>
         <TopBar />
-        <div className={styles.body}>
+        <div className={`${styles.body} ${compactSidebar ? styles.compactSidebar : ''}`.trim()}>
           <Sidebar />
           <MainPanel>
             <Routes>

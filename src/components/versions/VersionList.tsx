@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styles from './VersionList.module.css'
-import { DiffViewer } from './DiffViewer'
 import { VersionBadge } from './VersionBadge'
 import { useVersionHistory } from '../../hooks/useVersionHistory'
 import { useAppStore } from '../../stores/useAppStore'
 import type { PromptVersion } from '../../db/schema'
 
 export function VersionList() {
+  const navigate = useNavigate()
   const activePromptId = useAppStore((state) => state.activePromptId)
   const { versions, currentVersion } = useVersionHistory(activePromptId)
   const [selection, setSelection] = useState<string[]>([])
@@ -76,15 +77,30 @@ export function VersionList() {
     <div className={styles.panel}>
       <div className={styles.controls}>
         <p className={styles.helper}>{helperText}</p>
-        {selection.length > 0 ? (
-          <button
-            type="button"
-            className={styles.clearButton}
-            onClick={() => setSelection([])}
-          >
-            Clear
-          </button>
-        ) : null}
+        <div className={styles.actions}>
+          {canCompare && compareFrom && compareTo && activePromptId ? (
+            <button
+              type="button"
+              className={styles.compareButton}
+              onClick={() =>
+                navigate(
+                  `/prompt/${activePromptId}/diff/${compareFrom.versionLabel}/${compareTo.versionLabel}`,
+                )
+              }
+            >
+              Open diff
+            </button>
+          ) : null}
+          {selection.length > 0 ? (
+            <button
+              type="button"
+              className={styles.clearButton}
+              onClick={() => setSelection([])}
+            >
+              Clear
+            </button>
+          ) : null}
+        </div>
       </div>
       <ul className={styles.list}>
         {versions.map((version) => {
@@ -126,19 +142,6 @@ export function VersionList() {
           )
         })}
       </ul>
-      {canCompare && compareFrom && compareTo ? (
-        <div className={styles.diffPanel}>
-          <div className={styles.diffHeader}>
-            <p className={styles.diffTitle}>Diff preview</p>
-            <span className={styles.diffMeta}>
-              {compareFrom.versionLabel} -&gt; {compareTo.versionLabel}
-            </span>
-          </div>
-          <div className={styles.diffBody}>
-            <DiffViewer previous={compareFrom.content} next={compareTo.content} />
-          </div>
-        </div>
-      ) : null}
     </div>
   )
 }

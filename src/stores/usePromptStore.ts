@@ -21,7 +21,27 @@ interface PromptState {
   createFolder: (name: string, parentId?: string) => Promise<string>
   deletePrompt: (id: string) => Promise<void>
   archivePrompt: (id: string) => Promise<void>
+  importPrompts: (payloads: ImportPromptPayload[]) => Promise<void>
   setActivePrompt: (id: string | null) => void
+}
+
+interface ImportPromptVersion {
+  versionLabel?: string
+  content: string
+  variables?: VariableMap
+  commitMessage?: string
+  createdAt?: number
+  isCurrent?: boolean
+}
+
+export interface ImportPromptPayload {
+  title: string
+  description?: string
+  tags?: string[]
+  folderId?: string
+  createdAt?: number
+  updatedAt?: number
+  versions: ImportPromptVersion[]
 }
 
 const nowLabel = () => new Date().toISOString().slice(0, 10)
@@ -153,6 +173,83 @@ export const usePromptStore = create<PromptState>((set, get) => ({
   },
   archivePrompt: async (id) => {
     await db.prompts.update(id, { isArchived: true })
+    await get().loadPrompts()
+  },
+  importPrompts: async (payloads) => {
+    if (payloads.length === 0) {
+      return
+    }
+
+    const now = Date.now()
+    const promptRecords: Prompt[] = []
+    const versionRecords: PromptVersion[] = []
+
+    payloads.forEach((payload) => {
+      const promptId = uuid()
+      const createdAt =
+        typeof payload.createdAt === 'number' && Number.isFinite(payload.createdAt)
+          ? payload.createdAt
+          : now
+      const updatedAt =
+        typeof payload.updatedAt === 'number' && Number.isFinite(payload.updatedAt)
+          ? payload.updatedAt
+          : createdAt
+      const versions = payload.versions.length > 0 ? payload.versions : []
+
+      promptRecords.push({
+        id: promptId,
+        title: payload.title || `Imported Prompt - ${nowLabel()}`,
+        description: payload.description ?? '',
+        tags: payload.tags ?? [],
+        createdAt,
+        updatedAt: Math.max(updatedAt, createdAt),
+        folderId: payload.folderId,
+        isArchived: false,
+      })
+
+      const normalizedVersions = versions.length
+        ? versions
+        : [{ content: '', versionLabel: 'v1', variables: {}, isCurrent: true }]
+
+      let currentIndex = normalizedVersions.findIndex((version) => version.isCurrent)
+      if (currentIndex < 0) {
+        let latestIndex = 0
+        let latestTime = normalizedVersions[0]?.createdAt ?? createdAt
+        normalizedVersions.forEach((version, index) => {
+          const versionTime =
+            typeof version.createdAt === 'number' && Number.isFinite(version.createdAt)
+              ? version.createdAt
+              : createdAt
+          if (versionTime >= latestTime) {
+            latestTime = versionTime
+            latestIndex = index
+          }
+        })
+        currentIndex = latestIndex
+      }
+
+      normalizedVersions.forEach((version, index) => {
+        versionRecords.push({
+          id: uuid(),
+          promptId,
+          versionLabel: version.versionLabel || `v${index + 1}`,
+          content: version.content,
+          variables: version.variables ?? {},
+          commitMessage: version.commitMessage,
+          createdAt:
+            typeof version.createdAt === 'number' && Number.isFinite(version.createdAt)
+              ? version.createdAt
+              : createdAt,
+          isCurrent: index === currentIndex,
+        })
+      })
+    })
+
+    await db.transaction('rw', db.prompts, db.promptVersions, async () => {
+      await db.prompts.bulkAdd(promptRecords)
+      await db.promptVersions.bulkAdd(versionRecords)
+    })
+
     await get().loadPrompts()
   },
   setActivePrompt: (id) => set({ activePromptId: id }),

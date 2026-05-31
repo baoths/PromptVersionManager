@@ -198,8 +198,12 @@ export default function EditorPage() {
           <p>Draft autosaves every 800ms.</p>
         </div>
         <div className={styles.actions}>
-          <ExportModal />
-          <ShareModal />
+          <ExportModal
+            prompt={prompt}
+            versions={versions}
+            currentVersion={current ?? null}
+          />
+          <ShareModal prompt={prompt} version={current ?? null} />
         </div>
       </header>
       <PromptEditor

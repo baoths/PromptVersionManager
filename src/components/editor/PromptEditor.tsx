@@ -4,6 +4,7 @@ import { usePromptStore } from '../../stores/usePromptStore'
 import { parseVariables } from '../../utils/variableParser'
 import { VariableBar } from './VariableBar'
 import type { VariableMap } from '../../db/schema'
+import { useAppStore } from '../../stores/useAppStore'
 
 interface PromptEditorProps {
   promptId: string | null
@@ -22,6 +23,7 @@ export function PromptEditor({
   const updateCurrentVersionVariables = usePromptStore(
     (state) => state.updateCurrentVersionVariables,
   )
+  const showTokenEstimate = useAppStore((state) => state.showTokenEstimate)
   const [content, setContent] = useState(initialContent)
   const [variableValues, setVariableValues] = useState<VariableMap>(initialVariables)
   const variableTimeoutRef = useRef<number | null>(null)
@@ -113,10 +115,12 @@ export function PromptEditor({
         rows={16}
         aria-label="Prompt editor"
       />
-      <footer className={styles.footer}>
-        <span>{stats.words} words</span>
-        <span>{stats.tokens} tokens</span>
-      </footer>
+      {showTokenEstimate ? (
+        <footer className={styles.footer}>
+          <span>{stats.words} words</span>
+          <span>{stats.tokens} tokens</span>
+        </footer>
+      ) : null}
       <VariableBar
         variables={variables}
         values={variableValues}
