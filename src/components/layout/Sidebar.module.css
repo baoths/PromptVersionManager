@@ -51,7 +51,22 @@
   color: var(--text-secondary);
 }
 
+.navButton {
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+}
+
 .nav a:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.navButton:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
 }

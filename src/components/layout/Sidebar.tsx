@@ -39,6 +39,18 @@ export function Sidebar() {
       <div className={styles.section}>
         <p className={styles.sectionLabel}>Library</p>
         <nav className={styles.nav}>
+          <button
+            type="button"
+            className={`${styles.navButton} ${
+              selectedFolderId === 'no-folder' ? styles.active : ''
+            }`.trim()}
+            onClick={() => {
+              setSelectedFolderId('no-folder')
+              navigate('/')
+            }}
+          >
+            No folder
+          </button>
           <NavLink
             to="/"
             className={({ isActive }) => (isActive ? styles.active : '')}
@@ -60,36 +72,21 @@ export function Sidebar() {
           {folders.length === 0 ? (
             <p className={styles.empty}>No folders yet.</p>
           ) : (
-            <>
+            folders.map((folder) => (
               <button
-                key="no-folder"
+                key={folder.id}
                 type="button"
                 className={`${styles.folderItem} ${
-                  selectedFolderId === 'no-folder' ? styles.folderItemActive : ''
+                  selectedFolderId === folder.id ? styles.folderItemActive : ''
                 }`.trim()}
                 onClick={() => {
-                  setSelectedFolderId('no-folder')
+                  setSelectedFolderId(folder.id)
                   navigate('/')
                 }}
               >
-                No folder
+                {folder.name}
               </button>
-              {folders.map((folder) => (
-                <button
-                  key={folder.id}
-                  type="button"
-                  className={`${styles.folderItem} ${
-                    selectedFolderId === folder.id ? styles.folderItemActive : ''
-                  }`.trim()}
-                  onClick={() => {
-                    setSelectedFolderId(folder.id)
-                    navigate('/')
-                  }}
-                >
-                  {folder.name}
-                </button>
-              ))}
-            </>
+            ))
           )}
         </div>
         <div className={styles.folderInput}>

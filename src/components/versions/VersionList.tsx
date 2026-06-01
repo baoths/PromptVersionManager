@@ -1,76 +1,68 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import styles from './VersionList.module.css'
 import { VersionBadge } from './VersionBadge'
 import { useVersionHistory } from '../../hooks/useVersionHistory'
 import { useAppStore } from '../../stores/useAppStore'
-import type { PromptVersion } from '../../db/schema'
 
 export function VersionList() {
   const navigate = useNavigate()
   const location = useLocation()
   const activePromptId = useAppStore((state) => state.activePromptId)
+  const compareVersionId = useAppStore((state) => state.compareVersionId)
+  const setCompareVersionId = useAppStore((state) => state.setCompareVersionId)
   const { versions, currentVersion } = useVersionHistory(activePromptId)
-  const [selection, setSelection] = useState<string[]>([])
 
   useEffect(() => {
-    setSelection([])
-  }, [activePromptId])
+    setCompareVersionId(null)
+  }, [activePromptId, setCompareVersionId])
 
   useEffect(() => {
-    setSelection((previous) =>
-      previous.filter((id) => versions.some((version) => version.id === id)),
-    )
-  }, [versions])
+    if (compareVersionId && !versions.some((version) => version.id === compareVersionId)) {
+      setCompareVersionId(null)
+    }
+  }, [compareVersionId, setCompareVersionId, versions])
 
-  const selectedVersions = useMemo(
-    () =>
-      selection
-        .map((id) => versions.find((version) => version.id === id))
-        .filter((version): version is PromptVersion => Boolean(version)),
-    [selection, versions],
+  const compareVersion = useMemo(
+    () => versions.find((version) => version.id === compareVersionId) ?? null,
+    [compareVersionId, versions],
   )
 
-  const primary = selectedVersions[0] ?? null
-  const secondary = selectedVersions[1] ?? null
-  const primaryIsCurrent =
-    Boolean(primary && currentVersion && primary.id === currentVersion.id)
-  const compareFrom = primary
-  const compareTo = secondary ?? (primary && !primaryIsCurrent ? currentVersion : null)
-  const canCompare = Boolean(compareFrom && compareTo)
+  useEffect(() => {
+    if (compareVersion && currentVersion && compareVersion.id === currentVersion.id) {
+      setCompareVersionId(null)
+    }
+  }, [compareVersion, currentVersion, setCompareVersionId])
+
+  const isComparing = Boolean(compareVersion && currentVersion)
 
   const helperText = (() => {
-    if (selection.length === 0) {
-      return 'Select one or two versions to compare.'
+    if (!currentVersion) {
+      return 'No current version available yet.'
     }
-    if (selection.length === 1) {
-      if (primaryIsCurrent || !currentVersion) {
-        return 'Select another version to compare with current.'
-      }
-      return `Comparing ${primary?.versionLabel ?? 'version'} to current.`
+    if (!compareVersion) {
+      return 'Select an older version to compare with current.'
     }
-    return `Comparing ${primary?.versionLabel ?? 'version'} to ${
-      secondary?.versionLabel ?? 'version'
-    }.`
+    return `Comparing ${compareVersion.versionLabel} to current.`
   })()
 
   const handleClear = () => {
-    setSelection([])
+    setCompareVersionId(null)
     if (activePromptId && location.pathname.includes('/diff/')) {
-      navigate(`/prompt/${activePromptId}`)
+      navigate(`/prompt/${activePromptId}`, { replace: true })
     }
   }
 
-  const handleSelect = (id: string) => {
-    setSelection((previous) => {
-      if (previous.includes(id)) {
-        return previous.filter((item) => item !== id)
-      }
-      if (previous.length < 2) {
-        return [...previous, id]
-      }
-      return [previous[1], id]
-    })
+  const handleSelect = (id: string, isCurrent: boolean) => {
+    if (isCurrent) {
+      setCompareVersionId(null)
+      return
+    }
+    const nextId = compareVersionId === id ? null : id
+    setCompareVersionId(nextId)
+    if (nextId && activePromptId && location.pathname.includes('/diff/')) {
+      navigate(`/prompt/${activePromptId}`, { replace: true })
+    }
   }
 
   if (!activePromptId) {
@@ -86,20 +78,7 @@ export function VersionList() {
       <div className={styles.controls}>
         <p className={styles.helper}>{helperText}</p>
         <div className={styles.actions}>
-          {canCompare && compareFrom && compareTo && activePromptId ? (
-            <button
-              type="button"
-              className={styles.compareButton}
-              onClick={() =>
-                navigate(
-                  `/prompt/${activePromptId}/diff/${compareFrom.versionLabel}/${compareTo.versionLabel}`,
-                )
-              }
-            >
-              Open diff
-            </button>
-          ) : null}
-          {selection.length > 0 ? (
+          {isComparing ? (
             <button
               type="button"
               className={styles.clearButton}
@@ -112,15 +91,8 @@ export function VersionList() {
       </div>
       <ul className={styles.list}>
         {versions.map((version) => {
-          const selectedIndex = selection.indexOf(version.id)
-          const isSelected = selectedIndex >= 0
-          const selectionLabel = !isSelected
-            ? null
-            : selection.length === 1
-              ? 'Selected'
-              : selectedIndex === 0
-                ? 'Base'
-                : 'Compare'
+          const isSelected = compareVersionId === version.id
+          const selectionLabel = isSelected && !version.isCurrent ? 'Compare' : null
           return (
             <li key={version.id} className={styles.item}>
               <button
@@ -128,7 +100,7 @@ export function VersionList() {
                 className={`${styles.itemButton} ${
                   isSelected ? styles.selected : ''
                 }`.trim()}
-                onClick={() => handleSelect(version.id)}
+                onClick={() => handleSelect(version.id, version.isCurrent)}
                 aria-pressed={isSelected}
               >
                 <div className={styles.itemInfo}>

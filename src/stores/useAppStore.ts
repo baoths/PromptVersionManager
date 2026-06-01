@@ -9,6 +9,7 @@ interface AppState {
   activePromptId: string | null
   selectedFolderId: string | null
   selectedTags: string[]
+  compareVersionId: string | null
   compactSidebar: boolean
   showTokenEstimate: boolean
   confirmBeforeDelete: boolean
@@ -19,6 +20,7 @@ interface AppState {
   setActivePrompt: (id: string | null) => void
   setSelectedFolderId: (id: string | null) => void
   setSelectedTags: (tags: string[]) => void
+  setCompareVersionId: (id: string | null) => void
   setCompactSidebar: (value: boolean) => void
   setShowTokenEstimate: (value: boolean) => void
   setConfirmBeforeDelete: (value: boolean) => void
@@ -56,6 +58,7 @@ export const useAppStore = create<AppState>((set) => ({
   activePromptId: null,
   selectedFolderId: null,
   selectedTags: [],
+  compareVersionId: null,
   compactSidebar: readBool('pvm-compact-sidebar', false),
   showTokenEstimate: readBool('pvm-show-token-estimate', true),
   confirmBeforeDelete: readBool('pvm-confirm-before-delete', true),
@@ -80,6 +83,7 @@ export const useAppStore = create<AppState>((set) => ({
   setActivePrompt: (id) => set({ activePromptId: id }),
   setSelectedFolderId: (id) => set({ selectedFolderId: id }),
   setSelectedTags: (tags) => set({ selectedTags: tags }),
+  setCompareVersionId: (id) => set({ compareVersionId: id }),
   setCompactSidebar: (value) => {
     writeBool('pvm-compact-sidebar', value)
     set({ compactSidebar: value })

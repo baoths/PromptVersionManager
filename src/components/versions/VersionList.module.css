@@ -38,22 +38,6 @@
   color: var(--text-primary);
 }
 
-.compareButton {
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-default);
-  background: var(--accent-subtle);
-  color: var(--text-primary);
-  padding: 4px 8px;
-  font-size: var(--font-size-xs);
-  cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
-}
-
-.compareButton:hover {
-  background: var(--accent-hover);
-  color: #fff;
-}
-
 .list {
   list-style: none;
   padding: 0;
