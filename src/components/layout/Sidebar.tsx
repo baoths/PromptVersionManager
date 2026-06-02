@@ -6,11 +6,13 @@ import { TagFilter } from '../library/TagFilter'
 import { Modal } from '../ui/Modal'
 import { collectFolderTreeIds, usePromptStore } from '../../stores/usePromptStore'
 import { useAppStore } from '../../stores/useAppStore'
+import { useSearchStore } from '../../stores/useSearchStore'
 import type { Folder } from '../../db/schema'
 
 export function Sidebar() {
   const compactSidebar = useAppStore((state) => state.compactSidebar)
   const selectedFolderId = useAppStore((state) => state.selectedFolderId)
+  const selectedTags = useAppStore((state) => state.selectedTags)
   const setSelectedFolderId = useAppStore((state) => state.setSelectedFolderId)
   const setSelectedTags = useAppStore((state) => state.setSelectedTags)
   const folders = usePromptStore((state) => state.folders)
@@ -19,6 +21,8 @@ export function Sidebar() {
   const deleteFolder = usePromptStore((state) => state.deleteFolder)
   const loadPrompts = usePromptStore((state) => state.loadPrompts)
   const confirmBeforeDelete = useAppStore((state) => state.confirmBeforeDelete)
+  const searchQuery = useSearchStore((state) => state.query)
+  const setSearchQuery = useSearchStore((state) => state.setQuery)
   const [folderName, setFolderName] = useState('')
   const [folderToDelete, setFolderToDelete] = useState<Folder | null>(null)
   const navigate = useNavigate()
@@ -48,11 +52,18 @@ export function Sidebar() {
 
   const confirmDeleteFolder = async (folderId: string) => {
     await deleteFolder(folderId)
-    if (selectedFolderId === folderId) {
+    if (
+      selectedFolderId === folderId ||
+      (selectedFolderId &&
+        collectFolderTreeIds(folderId, folders).includes(selectedFolderId))
+    ) {
       setSelectedFolderId(null)
     }
     setFolderToDelete(null)
   }
+
+  const isAllPromptsView =
+    !selectedFolderId && selectedTags.length === 0 && !searchQuery.trim()
 
   useEffect(() => {
     void loadPrompts()
@@ -81,10 +92,11 @@ export function Sidebar() {
           </button>
           <NavLink
             to="/"
-            className={({ isActive }) => (isActive ? styles.active : '')}
+            className={isAllPromptsView ? styles.active : ''}
             onClick={() => {
               setSelectedFolderId(null)
               setSelectedTags([])
+              setSearchQuery('')
             }}
           >
             All Prompts
@@ -117,7 +129,10 @@ export function Sidebar() {
                 <button
                   type="button"
                   className={styles.folderDelete}
-                  onClick={() => handleDeleteFolder(folder)}
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    handleDeleteFolder(folder)
+                  }}
                   aria-label={`Delete folder ${folder.name}`}
                 >
                   Delete

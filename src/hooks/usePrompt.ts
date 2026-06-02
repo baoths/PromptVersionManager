@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
-import { useAppStore } from '../stores/useAppStore'
 import { usePromptStore } from '../stores/usePromptStore'
+import { setActivePromptId } from '../utils/activePrompt'
 import type { Prompt, PromptVersion } from '../db/schema'
 
 interface PromptDetails {
@@ -9,17 +9,15 @@ interface PromptDetails {
 }
 
 export function usePrompt(promptId: string | null): PromptDetails {
-  const { prompts, versions, loadPrompts, setActivePrompt } = usePromptStore()
-  const setActivePromptId = useAppStore((state) => state.setActivePrompt)
+  const { prompts, versions, loadPrompts } = usePromptStore()
 
   useEffect(() => {
     void loadPrompts()
   }, [loadPrompts])
 
   useEffect(() => {
-    setActivePrompt(promptId)
     setActivePromptId(promptId)
-  }, [promptId, setActivePrompt, setActivePromptId])
+  }, [promptId])
 
   const prompt = useMemo(
     () => prompts.find((item) => item.id === promptId) ?? null,

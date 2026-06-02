@@ -7,13 +7,13 @@ import { ImportDropzone } from '../components/export/ImportDropzone'
 import { useAppStore } from '../stores/useAppStore'
 import { useSearch } from '../hooks/useSearch'
 import { useSearchStore } from '../stores/useSearchStore'
+import { clearActivePrompt } from '../utils/activePrompt'
 
 export default function LibraryPage() {
   const prompts = usePromptStore((state) => state.prompts)
   const versions = usePromptStore((state) => state.versions)
   const folders = usePromptStore((state) => state.folders)
   const loadPrompts = usePromptStore((state) => state.loadPrompts)
-  const setActivePromptId = useAppStore((state) => state.setActivePrompt)
   const selectedFolderId = useAppStore((state) => state.selectedFolderId)
   const selectedTags = useAppStore((state) => state.selectedTags)
   const setSelectedFolderId = useAppStore((state) => state.setSelectedFolderId)
@@ -27,8 +27,8 @@ export default function LibraryPage() {
   }, [loadPrompts])
 
   useEffect(() => {
-    setActivePromptId(null)
-  }, [setActivePromptId])
+    clearActivePrompt()
+  }, [])
 
   const filteredPrompts = useMemo(() => {
     if (!selectedFolderId) {

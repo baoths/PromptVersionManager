@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { v4 as uuid } from 'uuid'
 import { db, type Folder, type Prompt, type PromptVersion, type VariableMap } from '../db/schema'
+import { clearActivePrompt, setActivePromptId } from '../utils/activePrompt'
 import { nextVersionLabel } from '../utils/semver'
 
 interface PromptState {
@@ -102,7 +103,8 @@ export const usePromptStore = create<PromptState>((set, get) => ({
     await db.prompts.add(prompt)
     await db.promptVersions.add(version)
     await get().loadPrompts()
-    set({ activePromptId: id, draftContent: '' })
+    setActivePromptId(id)
+    set({ draftContent: '' })
     return id
   },
   updateDraft: (content) => set({ draftContent: content }),
@@ -205,7 +207,8 @@ export const usePromptStore = create<PromptState>((set, get) => ({
     await db.prompts.delete(id)
     await db.promptVersions.where({ promptId: id }).delete()
     await get().loadPrompts()
-    set({ activePromptId: null, draftContent: '' })
+    clearActivePrompt()
+    set({ draftContent: '' })
   },
   archivePrompt: async (id) => {
     await db.prompts.update(id, { isArchived: true })

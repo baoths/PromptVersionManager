@@ -13,6 +13,7 @@ export function SearchBar() {
 
   const handleSelect = (promptId: string) => {
     navigate(`/prompt/${promptId}`)
+    setQuery('')
   }
 
   return (

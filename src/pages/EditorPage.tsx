@@ -8,6 +8,9 @@ import { DiffViewer } from '../components/versions/DiffViewer'
 import { usePrompt } from '../hooks/usePrompt'
 import { usePromptStore } from '../stores/usePromptStore'
 import { useAppStore } from '../stores/useAppStore'
+import type { VariableMap } from '../db/schema'
+
+const EMPTY_VARIABLES: VariableMap = {}
 
 export default function EditorPage() {
   const { id } = useParams()
@@ -53,15 +56,23 @@ export default function EditorPage() {
 
   const showDiff = Boolean(compareVersion && current)
 
-  useEffect(() => {
-    const nextTitle = prompt?.title ?? ''
-    setTitle(nextTitle)
-    lastSavedTitleRef.current = nextTitle
-  }, [prompt?.title])
+  const promptTitle = prompt?.title ?? ''
+  const [syncedTitle, setSyncedTitle] = useState(promptTitle)
+  if (promptTitle !== syncedTitle) {
+    setSyncedTitle(promptTitle)
+    setTitle(promptTitle)
+  }
+
+  const promptFolderId = prompt?.folderId ?? ''
+  const [syncedFolderId, setSyncedFolderId] = useState(promptFolderId)
+  if (promptFolderId !== syncedFolderId) {
+    setSyncedFolderId(promptFolderId)
+    setFolderId(promptFolderId)
+  }
 
   useEffect(() => {
-    setFolderId(prompt?.folderId ?? '')
-  }, [prompt?.folderId])
+    lastSavedTitleRef.current = promptTitle
+  }, [promptTitle])
 
   useEffect(() => {
     if (!id || !prompt) {
@@ -226,9 +237,10 @@ export default function EditorPage() {
       <div className={`${styles.editorGrid} ${showDiff ? styles.split : ''}`.trim()}>
         <div className={styles.editorPanel}>
           <PromptEditor
+            key={`${id ?? 'new'}-${current?.id ?? 'none'}`}
             promptId={id ?? null}
             initialContent={current?.content ?? ''}
-            initialVariables={current?.variables ?? {}}
+            initialVariables={current?.variables ?? EMPTY_VARIABLES}
           />
         </div>
         {showDiff && compareVersion && current ? (

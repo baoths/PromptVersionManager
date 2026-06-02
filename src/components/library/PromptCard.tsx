@@ -42,10 +42,6 @@ export function PromptCard({ data }: PromptCardProps) {
     : fullContent
 
   useEffect(() => {
-    setRenameValue(data.title)
-  }, [data.title])
-
-  useEffect(() => {
     if (!menuOpen) {
       return undefined
     }
@@ -97,6 +93,7 @@ export function PromptCard({ data }: PromptCardProps) {
 
   const handleRename = () => {
     setMenuOpen(false)
+    setRenameValue(data.title)
     setRenameOpen(true)
   }
 
@@ -116,10 +113,16 @@ export function PromptCard({ data }: PromptCardProps) {
       return
     }
     await deletePrompt(data.id)
+    if (window.location.hash.includes(`/prompt/${data.id}`)) {
+      navigate('/')
+    }
   }
 
   const handleDeleteConfirm = async () => {
     await deletePrompt(data.id)
+    if (window.location.hash.includes(`/prompt/${data.id}`)) {
+      navigate('/')
+    }
     setDeleteOpen(false)
   }
 

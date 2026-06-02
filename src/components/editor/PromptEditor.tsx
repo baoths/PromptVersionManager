@@ -28,25 +28,6 @@ export function PromptEditor({
   const [variableValues, setVariableValues] = useState<VariableMap>(initialVariables)
   const variableTimeoutRef = useRef<number | null>(null)
 
-  useEffect(() => {
-    setContent(initialContent)
-  }, [initialContent])
-
-  useEffect(() => {
-    setVariableValues(initialVariables)
-  }, [initialVariables])
-
-  useEffect(() => {
-    updateDraft(content)
-    if (!promptId) {
-      return
-    }
-    const handle = window.setTimeout(() => {
-      void saveDraft(promptId, content)
-    }, 800)
-    return () => window.clearTimeout(handle)
-  }, [content, promptId, saveDraft, updateDraft])
-
   const stats = useMemo(() => {
     const words = content.trim() ? content.trim().split(/\s+/).length : 0
     const tokens = Math.ceil(words * 1.33)
@@ -55,7 +36,10 @@ export function PromptEditor({
 
   const variables = useMemo(() => parseVariables(content), [content])
 
-  useEffect(() => {
+  const variableKeys = Object.keys(variables).sort().join('\0')
+  const [trackedKeys, setTrackedKeys] = useState(variableKeys)
+  if (variableKeys !== trackedKeys) {
+    setTrackedKeys(variableKeys)
     setVariableValues((previous) => {
       const next: VariableMap = {}
       Object.entries(variables).forEach(([key, defaultValue]) => {
@@ -71,7 +55,18 @@ export function PromptEditor({
       })
       return next
     })
-  }, [variables, initialVariables])
+  }
+
+  useEffect(() => {
+    updateDraft(content)
+    if (!promptId) {
+      return
+    }
+    const handle = window.setTimeout(() => {
+      void saveDraft(promptId, content)
+    }, 800)
+    return () => window.clearTimeout(handle)
+  }, [content, promptId, saveDraft, updateDraft])
 
   useEffect(() => {
     if (!promptId) {
