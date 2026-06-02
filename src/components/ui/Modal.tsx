@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import styles from './Modal.module.css'
 
 interface ModalProps {
@@ -24,11 +25,11 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
     return () => window.removeEventListener('keydown', handleKeydown)
   }, [open, onClose])
 
-  if (!open) {
+  if (!open || typeof document === 'undefined') {
     return null
   }
 
-  return (
+  return createPortal(
     <div
       className={styles.overlay}
       role="dialog"
@@ -47,6 +48,7 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
         </header>
         <div className={styles.body}>{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

@@ -19,6 +19,7 @@ interface PromptState {
   updatePromptFolder: (promptId: string, folderId: string | null) => Promise<void>
   updateCurrentVersionVariables: (promptId: string, variables: VariableMap) => Promise<void>
   createFolder: (name: string, parentId?: string) => Promise<string>
+  deleteFolder: (id: string) => Promise<void>
   deletePrompt: (id: string) => Promise<void>
   archivePrompt: (id: string) => Promise<void>
   importPrompts: (payloads: ImportPromptPayload[]) => Promise<void>
@@ -45,6 +46,21 @@ export interface ImportPromptPayload {
 }
 
 const nowLabel = () => new Date().toISOString().slice(0, 10)
+
+export const collectFolderTreeIds = (rootId: string, folders: Folder[]): string[] => {
+  const ids = new Set<string>([rootId])
+  let changed = true
+  while (changed) {
+    changed = false
+    for (const folder of folders) {
+      if (folder.parentId && ids.has(folder.parentId) && !ids.has(folder.id)) {
+        ids.add(folder.id)
+        changed = true
+      }
+    }
+  }
+  return Array.from(ids)
+}
 
 export const usePromptStore = create<PromptState>((set, get) => ({
   prompts: [],
@@ -164,6 +180,26 @@ export const usePromptStore = create<PromptState>((set, get) => ({
     await db.folders.add(folder)
     await get().loadPrompts()
     return id
+  },
+  deleteFolder: async (id) => {
+    const folders = await db.folders.toArray()
+    const folderIds = collectFolderTreeIds(id, folders)
+    const folderIdSet = new Set(folderIds)
+    const now = Date.now()
+
+    await db.transaction('rw', db.prompts, db.folders, async () => {
+      const prompts = await db.prompts.toArray()
+      await Promise.all(
+        prompts
+          .filter((prompt) => prompt.folderId && folderIdSet.has(prompt.folderId))
+          .map((prompt) =>
+            db.prompts.update(prompt.id, { folderId: undefined, updatedAt: now }),
+          ),
+      )
+      await db.folders.bulkDelete(folderIds)
+    })
+
+    await get().loadPrompts()
   },
   deletePrompt: async (id) => {
     await db.prompts.delete(id)

@@ -81,6 +81,13 @@
   gap: var(--space-2);
 }
 
+.folderRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2);
+  align-items: stretch;
+}
+
 .folderItem {
   background: transparent;
   border: 1px solid var(--border-subtle);
@@ -89,6 +96,23 @@
   color: var(--text-secondary);
   text-align: left;
   cursor: pointer;
+  min-width: 0;
+}
+
+.folderDelete {
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-muted);
+  padding: 8px 10px;
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+}
+
+.folderDelete:hover {
+  background: var(--diff-del-bg);
+  border-color: var(--diff-del-text);
+  color: var(--diff-del-text);
 }
 
 .folderItem:hover {
@@ -134,4 +158,36 @@
   margin: 0;
   color: var(--text-muted);
   font-size: var(--font-size-xs);
+}
+
+.deleteFolderForm {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.deleteFolderForm p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.deleteFolderActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.deleteFolderActions button {
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+}
+
+.deleteFolderActions button:last-child {
+  background: var(--diff-del-bg);
+  border-color: var(--diff-del-text);
+  color: var(--diff-del-text);
 }

@@ -5,6 +5,8 @@ import { usePromptStore } from '../stores/usePromptStore'
 import type { PromptCardData } from '../components/library/PromptCard'
 import { ImportDropzone } from '../components/export/ImportDropzone'
 import { useAppStore } from '../stores/useAppStore'
+import { useSearch } from '../hooks/useSearch'
+import { useSearchStore } from '../stores/useSearchStore'
 
 export default function LibraryPage() {
   const prompts = usePromptStore((state) => state.prompts)
@@ -16,6 +18,9 @@ export default function LibraryPage() {
   const selectedTags = useAppStore((state) => state.selectedTags)
   const setSelectedFolderId = useAppStore((state) => state.setSelectedFolderId)
   const setSelectedTags = useAppStore((state) => state.setSelectedTags)
+  const searchQuery = useSearchStore((state) => state.query)
+  const setSearchQuery = useSearchStore((state) => state.setQuery)
+  const { results: searchResults } = useSearch(searchQuery)
 
   useEffect(() => {
     void loadPrompts()
@@ -44,18 +49,24 @@ export default function LibraryPage() {
     )
   }, [filteredPrompts, selectedTags])
 
-  const filteredVersionCount = useMemo(() => {
-    if (!selectedFolderId) {
-      return versions.length
+  const searchedPrompts = useMemo(() => {
+    const trimmed = searchQuery.trim()
+    if (!trimmed) {
+      return fullyFilteredPrompts
     }
-    const promptIds = new Set(filteredPrompts.map((prompt) => prompt.id))
+    const matchIds = new Set(searchResults.map((result) => result.id))
+    return fullyFilteredPrompts.filter((prompt) => matchIds.has(prompt.id))
+  }, [fullyFilteredPrompts, searchQuery, searchResults])
+
+  const filteredVersionCount = useMemo(() => {
+    const promptIds = new Set(searchedPrompts.map((prompt) => prompt.id))
     return versions.filter((version) => promptIds.has(version.promptId)).length
-  }, [fullyFilteredPrompts, selectedFolderId, versions])
+  }, [searchedPrompts, versions])
 
   const promptCards = useMemo<PromptCardData[]>(() => {
     const folderMap = new Map(folders.map((folder) => [folder.id, folder.name]))
 
-    return fullyFilteredPrompts.map((prompt) => {
+    return searchedPrompts.map((prompt) => {
       const current = versions.find(
         (version) => version.promptId === prompt.id && version.isCurrent,
       )
@@ -69,13 +80,16 @@ export default function LibraryPage() {
         versionLabel: current?.versionLabel ?? 'v1',
       }
     })
-  }, [fullyFilteredPrompts, versions, folders])
+  }, [searchedPrompts, versions, folders])
 
-  const hasFilters = Boolean(selectedFolderId || selectedTags.length > 0)
+  const hasFilters = Boolean(
+    selectedFolderId || selectedTags.length > 0 || searchQuery.trim().length > 0,
+  )
 
   const handleClearFilters = () => {
     setSelectedFolderId(null)
     setSelectedTags([])
+    setSearchQuery('')
   }
 
   return (
@@ -104,7 +118,13 @@ export default function LibraryPage() {
         </div>
       </header>
       {promptCards.length === 0 ? (
-        <p className={styles.empty}>No prompts yet. Create a new prompt to get started.</p>
+        <p className={styles.empty}>
+          {searchQuery.trim()
+            ? `No prompts match "${searchQuery.trim()}".`
+            : hasFilters
+              ? 'No prompts match the current filters.'
+              : 'No prompts yet. Create a new prompt to get started.'}
+        </p>
       ) : (
         <PromptGrid prompts={promptCards} />
       )}
